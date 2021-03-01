@@ -5,14 +5,6 @@
 #include <dt-bindings/input/input.h>
 
 / {
-	model = "Ruijie RG-MTFi-M520";
-	compatible = "ruijie,rg-mtfi-m520", "qcom,ipq8064";
-
-	memory@0 {
-		reg = <0x42000000 0x7e000000>;
-		device_type = "memory";
-	};
-
 	aliases {
 		mdio-gpio0 = &mdio0;
 		sdcc1 = &sdcc1;
@@ -127,33 +119,6 @@
 			function = "gpio";
 			drive-strength = <2>;
 			bias-pull-down;
-		};
-	};
-};
-
-&gsbi2 {
-	qcom,mode = <GSBI_PROT_I2C_UART>;
-	status = "okay";
-
-	i2c@124a0000 {
-		status = "okay";
-
-		lm75@48 {
-			status = "okay";
-			compatible = "lm75";
-			reg = <0x48>;
-		};
-
-		pcf8563: rtc@51 {
-			status = "okay";
-			compatible = "nxp,pcf8563";
-			reg = <0x51>;
-		};
-
-		tca9539@74 {
-			status = "okay";
-			compatible = "ti,tca9539";
-			reg = <0x74>;
 		};
 	};
 };

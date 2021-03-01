@@ -37,7 +37,8 @@ ruijie_do_upgrade() {
 	local rootfs=
 
 	case "$board" in
-	ruijie,rg-mtfi-m520)
+	ruijie,rg-mtfi-m520-1gb|\
+	ruijie,rg-mtfi-m520-2gb)
 		kernel="/dev/mmcblk0p2"
 		rootfs="/dev/mmcblk0p3"
 		;;

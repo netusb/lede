@@ -31,7 +31,8 @@ platform_do_upgrade() {
 	linksys,ea8500)
 		platform_do_upgrade_linksys "$1"
 		;;
-	ruijie,rg-mtfi-m520)
+	ruijie,rg-mtfi-m520-1gb |\
+	ruijie,rg-mtfi-m520-2gb)
 		ruijie_do_upgrade "$1"
 		;;
 	tplink,c2600)
