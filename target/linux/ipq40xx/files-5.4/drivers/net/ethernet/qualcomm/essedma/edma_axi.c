@@ -881,7 +881,7 @@ static int edma_axi_probe(struct platform_device *pdev)
 
 	if (of_property_read_bool(np, "qcom,mdio_supported")) {
 		mdio_node = of_find_compatible_node(NULL, NULL,
-						    "qcom,ipq4019-mdio");
+						    "qcom,ipq40xx-mdio");
 		if (!mdio_node) {
 			dev_err(&pdev->dev, "cannot find mdio node by phandle");
 			err = -EIO;
