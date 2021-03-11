@@ -164,10 +164,8 @@ static void edma_configure_rx(struct edma_common_info *edma_cinfo)
 	/* Set Rx FIFO threshold to start to DMA data to host */
 	rxq_ctrl_data = EDMA_FIFO_THRESH_128_BYTE;
 
-	if (!edma_cinfo->is_single_phy) {
 	/* Set RX remove vlan bit */
 	rxq_ctrl_data |= EDMA_RXQ_CTRL_RMV_VLAN;
-	}
 
 	edma_write_reg(EDMA_REG_RXQ_CTRL, rxq_ctrl_data);
 }
@@ -1312,7 +1310,7 @@ void edma_adjust_link(struct net_device *netdev)
 	status = edma_check_link(adapter);
 
 	if (status == __EDMA_LINKUP && adapter->link_state == __EDMA_LINKDOWN) {
-		dev_info(&adapter->pdev->dev, "%s: GMAC Link is up with phy_speed=%d\n", netdev->name, phydev->speed);
+		phy_print_status(phydev);
 		adapter->link_state = __EDMA_LINKUP;
 		if (adapter->edma_cinfo->is_single_phy) {
 			ess_set_port_status_speed(adapter->edma_cinfo, phydev,
@@ -1322,7 +1320,7 @@ void edma_adjust_link(struct net_device *netdev)
 		if (netif_running(netdev))
 			netif_tx_wake_all_queues(netdev);
 	} else if (status == __EDMA_LINKDOWN && adapter->link_state == __EDMA_LINKUP) {
-		dev_info(&adapter->pdev->dev, "%s: GMAC Link is down\n", netdev->name);
+		phy_print_status(phydev);
 		adapter->link_state = __EDMA_LINKDOWN;
 		netif_carrier_off(netdev);
 		netif_tx_stop_all_queues(netdev);
@@ -1411,12 +1409,10 @@ netdev_tx_t edma_xmit(struct sk_buff *skb,
 	}
 
 	/* Check and mark VLAN tag offload */
-	if (!adapter->edma_cinfo->is_single_phy) {
-		if (unlikely(skb_vlan_tag_present(skb)))
-			flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_FLAG;
-		else if (adapter->default_vlan_tag)
-			flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_DEFAULT_FLAG;
-	}
+	if (unlikely(skb_vlan_tag_present(skb)))
+		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_FLAG;
+	else if (!adapter->edma_cinfo->is_single_phy && adapter->default_vlan_tag)
+		flags_transmit |= EDMA_VLAN_TX_TAG_INSERT_DEFAULT_FLAG;
 
 	/* Check and mark checksum offload */
 	if (likely(skb->ip_summed == CHECKSUM_PARTIAL))
@@ -2027,6 +2023,10 @@ int edma_open(struct net_device *netdev)
 	 */
 	if (adapter->poll_required) {
 		if (!IS_ERR(adapter->phydev)) {
+			/* AR40xx calibration will leave the PHY in unwanted state,
+			 * so a soft reset is required before phy_start()
+			 */
+			genphy_soft_reset(adapter->phydev);
 			phy_start(adapter->phydev);
 			phy_start_aneg(adapter->phydev);
 			adapter->link_state = __EDMA_LINKDOWN;
